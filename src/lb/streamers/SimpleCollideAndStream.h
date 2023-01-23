@@ -11,7 +11,7 @@
 #include "lb/streamers/SimpleCollideAndStreamDelegate.h"
 #include "lb/kernels/BaseKernel.h"
 #include "lb/HFunction.h"
-
+#include <omp.h>
 namespace hemelb
 {
 	namespace lb
@@ -42,8 +42,12 @@ namespace hemelb
 								geometry::LatticeData* latDat,
 								lb::MacroscopicPropertyCache& propertyCache)
 						{
+						        #pragma omp parallel for	
 							for (site_t siteIndex = firstIndex; siteIndex < (firstIndex + siteCount); siteIndex++)
 							{
+							
+//std::cout << "Thread id: " << omp_get_thread_num() << " rank id: " << latDat->GetLocalRank() <<  std::endl;
+
 								geometry::Site<geometry::LatticeData> site = latDat->GetSite(siteIndex);
 
 								kernels::HydroVars<typename CollisionType::CKernel> hydroVars(site);

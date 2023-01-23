@@ -22,6 +22,7 @@ option(HEMELB_USE_GMYPLUS "use GMY+ format" OFF)
 option(HEMELB_USE_MPI_CALL "use standard MPI functions when reading blocks" OFF)
 option(HEMELB_USE_MPI_WIN "use MPI windowing to help load large domains" OFF)
 option(HEMELB_USE_BIGMPI "use BigMPI to read data from file" OFF)
+option(HEMELB_USE_OPENMP "use OpenMP to allow for node-level parallelism and reduction of MPI processes" OFF)
 option(HEMELB_USE_PARMETIS "use ParMETIS" OFF)
 #option(HEMELB_USE_ZOLTAN "use Zoltan" OFF)
 #option(HEMELB_VALIDATE_GEOMETRY "validate geometry" OFF)
@@ -122,6 +123,13 @@ if(HEMELB_USE_AVX512)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -xCORE-AVX512")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -xCORE-AVX512")
         set(CMAKE_CXX_FLAGS_RELEASE "${HEMELB_OPTIMISATION} -xCORE-AVX512") #-march=skylake-avx512
+endif()
+
+if(HEMELB_USE_OPENMP)
+	add_definitions(-DHEMELB_USE_OPENMP)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fopenmp")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fopenmp")
+	set(CMAKE_CXX_FLAGS_RELEASE "${HEMELB_OPTIMISATION} -fopenmp") #for gnu, clang and Cray compilers
 endif()
 
 if(HEMELB_USE_VELOCITY_WEIGHTS_FILE)

@@ -51,6 +51,7 @@ namespace hemelb
 								geometry::LatticeData* latDat,
 								lb::MacroscopicPropertyCache& propertyCache)
 						{
+					        #pragma omp parallel for
 							for (site_t siteIndex = firstIndex; siteIndex < (firstIndex + siteCount); siteIndex++)
 							{
 								geometry::Site<geometry::LatticeData> site = latDat->GetSite(siteIndex);
