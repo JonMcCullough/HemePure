@@ -4,8 +4,8 @@
 // file AUTHORS. This software is provided under the terms of the
 // license in the file LICENSE.
 
-#ifndef HEMELB_GEOMETRY_GEOMETRYREADER_H
-#define HEMELB_GEOMETRY_GEOMETRYREADER_H
+#ifndef HEMELB_GEOMETRY_GEOMETRYSGMYREADER_H
+#define HEMELB_GEOMETRY_GEOMETRYSGMYREADER_H
 
 #include <vector>
 #include <string>
@@ -14,6 +14,7 @@
 #include <unordered_set>
 
 #include "io/writers/xdr/XdrReader.h"
+#include "io/formats/formats.h"
 #include "lb/lattices/LatticeInfo.h"
 #include "lb/LbmParameters.h"
 #include "net/mpi.h"
@@ -26,18 +27,65 @@
 
 #include "net/MpiFile.h"
 
+
 namespace hemelb
 {
 	namespace geometry
 	{
-		class GeometryReader
+		namespace SGMY {
+
+			constexpr uint32_t SgmyMagicNumber = 0x676d7905;
+			constexpr uint32_t SgmyVersionNumber = 1;
+
+			struct NonEmptyHeaderRecord {
+			  uint64_t   blockNumber;  // 8 bytes
+			  uint64_t   fileOffset;   // 8 bytes
+			  uint32_t sites;          // 4 bytes
+			  uint32_t bytes;           // 4 bytes
+			  uint32_t uncompressedBytes; // 4 bytes  Total 28 bytes
+			  uint32_t weights;			  // 4 bytes  Total 32 bytes
+			};
+
+
+			struct SGMYPreambleInfo {
+			  uint32_t HemeLBMagic;
+			  uint32_t SgmyMagic;
+
+			  uint32_t Version;
+			  uint32_t BlocksX;
+
+			  uint32_t BlocksY;
+			  uint32_t BlocksZ;
+
+			  uint32_t BlockSize;
+			  uint32_t MaxCompressedBytes;
+
+			  uint32_t MaxUncompressedBytes;
+			  uint32_t HeaderOffset;
+
+			  uint64_t NonEmptyBlocks;
+			  uint64_t DataOffset;
+			  SGMYPreambleInfo() : HemeLBMagic(hemelb::io::formats::HemeLbMagicNumber),
+									 SgmyMagic(SgmyMagicNumber),
+									 Version(SgmyVersionNumber),
+									 BlocksX(0), BlocksY(0), BlocksZ(0),
+									 MaxCompressedBytes(0), MaxUncompressedBytes(0),
+									 HeaderOffset(56),
+									 NonEmptyBlocks(0),
+									 DataOffset(0) {}
+
+			};
+		} // namespace SGMY
+
+
+		class GeometrySGMYReader
 		{
 			public:
 				typedef util::Vector3D<site_t> BlockLocation;
 
-				GeometryReader(const lb::lattices::LatticeInfo&,
+				GeometrySGMYReader(const lb::lattices::LatticeInfo&,
 						reporting::Timers &timings, const net::IOCommunicator& ioComm);
-				~GeometryReader();
+				~GeometrySGMYReader();
 
 				Geometry LoadAndDecompose(const std::string& dataFilePath);
 
@@ -55,22 +103,19 @@ namespace hemelb
 				 */
 				std::vector<char> ReadOnAllTasks(sitedata_t nBytes);
 
-				Geometry ReadPreamble();
 
-				void ReadHeader(site_t blockCount);
+				/** 
+                 * Reads the SGMY Preamble. It returns a base initialized Geometry to Us
+				 * and also an SGMY PreambleInfo structure.
+				 */ 	
+				Geometry ReadPreamble(SGMY::SGMYPreambleInfo& preambleInfo);
 
-#ifdef HEMELB_USE_MPI_WIN
+				void ReadHeader(const SGMY::SGMYPreambleInfo& preambleInfo);
+
 				void ReadInBlocksWithHalo(Geometry& geometry,
 						std::unordered_map<site_t, proc_t>& unitForEachBlock,
 						std::unordered_map<site_t, proc_t>& unitForEachBlockFiltered,
-						std::unordered_set<site_t>& readBlock,
-						const proc_t localRank);
-#else
-				void ReadInBlocksWithHalo(Geometry& geometry,
-						std::unordered_map<site_t, proc_t>& unitForEachBlock,
-						std::unordered_map<site_t, proc_t>& unitForEachBlockFiltered,
-						const proc_t localRank);
-#endif
+						const proc_t localRank, const SGMY::SGMYPreambleInfo& preambleInfo);
 
 				/**
 				 * Compile a list of blocks to be read onto this core, including all the ones we perform
@@ -116,6 +161,8 @@ namespace hemelb
 				std::vector<char> DecompressBlockData(const std::vector<char>& compressed,
 						const unsigned int uncompressedBytes);
 
+
+				void ParseBlock(BlockReadResult& theBlock, site_t sitesPerBlock, io::writers::xdr::XdrReader& reader);
 				void ParseBlock(Geometry& geometry, const site_t block, io::writers::xdr::XdrReader& reader);
 
 				/**
@@ -186,7 +233,7 @@ namespace hemelb
 
 				//! Info about the connectivity of the lattice.
 				const lb::lattices::LatticeInfo& latticeInfo;
-				//! File accessed to read in the geometry data.
+				
 				net::MpiFile file;
 
 				//! HemeLB's main communicator.
@@ -195,6 +242,9 @@ namespace hemelb
 				net::MpiCommunicator computeComms;
 				//! True if this rank is participating in the domain decomposition.
 				bool participateInTopology;
+
+				//! The offset for each block in the file (after preamble and header)
+				std::unordered_map<site_t, size_t> blockFileOffsets;
 
 				//! The number of non-empty blocks in the geometry.
 				sitedata_t nonEmptyBlocks;

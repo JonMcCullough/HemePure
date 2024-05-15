@@ -84,6 +84,18 @@ namespace hemelb
 					return (siteI * blockSize + siteJ) * blockSize + siteK;
 				}
 
+				/***
+				 * Get the coordinates of a site, i.e. the three-d coordinate, from the one-d i.d.
+				 */
+				util::Vector3D<site_t> GetSiteCoordinatesFromSiteId(site_t siteId) const
+				{
+				    site_t siteZ = siteId % blockSize;
+				    site_t remainder = siteId / blockSize;
+				    site_t siteY = remainder % blockSize;
+				    site_t siteX = remainder / blockSize;
+				    return util::Vector3D<site_t>(siteX, siteY, siteZ);
+				}
+
 				/**
 				 * True if the given block coordinates are within the geometry bounding-box.
 				 */

@@ -151,6 +151,27 @@ namespace hemelb
 					return (blockCoords.x * blockCounts.y + blockCoords.y) * blockCounts.z + blockCoords.z;
 				}
 
+				
+			        inline util::Vector3D<site_t> GetBlockCoordsFromBlockID(site_t blockID)
+			       	{
+					util::Vector3D<site_t> ret_val;
+					ret_val.z = blockID % blockCounts.z;
+					site_t rest = blockID / blockCounts.z;
+					ret_val.y = rest % blockCounts.y;
+					ret_val.x = rest / blockCounts.y;
+					return ret_val;
+				}
+
+				inline util::Vector3D<site_t> GetSiteCoordsFromSiteID(site_t siteID)
+			       	{
+					util::Vector3D<site_t> ret_val;
+					ret_val.z = siteID % blockSize;
+					site_t rest = siteID / blockSize;
+					ret_val.y = rest % blockSize;
+					ret_val.x = rest / blockSize;
+					return ret_val;
+				}
+
 				bool IsValidLatticeSite(const util::Vector3D<site_t>& siteCoords) const;
 
 				/**

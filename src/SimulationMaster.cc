@@ -9,7 +9,8 @@
 #include "extraction/LbDataSourceIterator.h"
 #include "io/writers/xdr/XdrFileWriter.h"
 #include "util/utilityFunctions.h"
-#include "geometry/GeometryReader.h"
+//#include "geometry/GeometryReader.h"
+#include "geometry/GeometrySGMYReader.h"
 #include "geometry/LatticeData.h"
 #include "util/fileutils.h"
 #include "log/Logger.h"
@@ -135,7 +136,9 @@ void SimulationMaster::Initialise() {
 	hemelb::log::Logger::Log<hemelb::log::Info, hemelb::log::Singleton>("INITIALISE");
 	hemelb::log::Logger::Log<hemelb::log::Info, hemelb::log::Singleton>("----------");
 	hemelb::log::Logger::Log<hemelb::log::Info, hemelb::log::Singleton>("--> loading input and decomposing geometry");
-	hemelb::geometry::GeometryReader reader(
+	
+//	hemelb::geometry::GeometryReader reader(
+	hemelb::geometry::GeometrySGMYReader reader(
 		latticeType::GetLatticeInfo(),
 		timings, ioComms);
 	hemelb::geometry::Geometry readGeometryData =
