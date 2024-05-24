@@ -22,9 +22,11 @@ namespace hemelb
 
 	const double REFERENCE_PRESSURE_mmHg = 0.0;
 	const double mmHg_TO_PASCAL          = 133.3223874;
-	const double BLOOD_DENSITY_Kg_per_m3 = 1000.0;
+	//const double BLOOD_DENSITY_Kg_per_m3 = 1000.0;
+	extern double BLOOD_DENSITY_Kg_per_m3;
 	const double MAGNE_DENSITY_Kg_per_m3 = 5199.0;
-	const double BLOOD_VISCOSITY_Pa_s    = 0.004;
+	//const double BLOOD_VISCOSITY_Pa_s    = 0.004;
+	extern  double BLOOD_VISCOSITY_Pa_s;
 
 	const double kB = 1.3806488E-23;
 	const double kT = 310.15*kB;

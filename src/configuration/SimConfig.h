@@ -185,7 +185,15 @@ namespace hemelb
         {
           return spongeLayerLifetime;
         }
-
+	
+	distribn_t GetDensityKgM3() const
+        {
+          return densityPhys;
+        }
+        distribn_t GetViscosityPaS() const
+        {
+          return viscosityPhys;
+        }
         /**
          * True if the XML file has a section specifying colloids.
          * @return
@@ -359,6 +367,8 @@ namespace hemelb
         Dimensionless viscosityRatio;
         LatticeDistance spongeLayerWidth;
         LatticeTimeStep spongeLayerLifetime;
+        distribn_t densityPhys;
+        distribn_t viscosityPhys;
     };
   }
 }

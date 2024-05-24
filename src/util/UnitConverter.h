@@ -21,7 +21,7 @@ namespace hemelb
     class UnitConverter
     {
       public:
-        UnitConverter(PhysicalTime timeStep, PhysicalDistance voxelSize, PhysicalPosition latticeOrigin);
+        UnitConverter(PhysicalTime timeStep, PhysicalDistance voxelSize, PhysicalPosition latticeOrigin, double density);
 
         LatticePressure ConvertPressureToLatticeUnits(PhysicalPressure pressure) const;
         LatticeStress ConvertPressureDifferenceToLatticeUnits(PhysicalStress pressure_grad) const;

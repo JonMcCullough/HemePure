@@ -21,6 +21,8 @@
 #include "colloids/BodyForces.h"
 #include "colloids/BoundaryConditions.h"
 
+#include "constants.h"
+
 #include <map>
 #include <limits>
 #include <cstdlib>
@@ -33,6 +35,9 @@
  */
 
 double hemelb::tau_;
+
+double hemelb::BLOOD_DENSITY_Kg_per_m3;
+double hemelb::BLOOD_VISCOSITY_Pa_s;
 
 SimulationMaster::SimulationMaster(hemelb::configuration::CommandLine & options, const hemelb::net::IOCommunicator& ioComm) :
 	ioComms(ioComm), timings(ioComm), build_info(), communicationNet(ioComm) {
@@ -52,6 +57,9 @@ SimulationMaster::SimulationMaster(hemelb::configuration::CommandLine & options,
 
 	fileManager = new hemelb::io::PathManager(options, IsCurrentProcTheIOProc(), GetProcessorCount());
 	simConfig = hemelb::configuration::SimConfig::New(fileManager->GetInputFile());
+	hemelb::BLOOD_DENSITY_Kg_per_m3 = simConfig->GetDensityKgM3();
+	hemelb::BLOOD_VISCOSITY_Pa_s = simConfig->GetViscosityPaS();
+	std::cout << "density " << hemelb::BLOOD_DENSITY_Kg_per_m3 << " visc " << hemelb::BLOOD_VISCOSITY_Pa_s << std::endl;
 	unitConverter = &simConfig->GetUnitConverter();
 	monitoringConfig = simConfig->GetMonitoringConfiguration();
 
@@ -226,8 +234,12 @@ void SimulationMaster::Initialise() {
 
 	latticeBoltzmannModel->Initialise(inletValues, outletValues, unitConverter);
         latticeBoltzmannModel->SetInitialConditions(ioComms); //JM Checkpoint addition
-	neighbouringDataManager->ShareNeeds();
-	neighbouringDataManager->TransferNonFieldDependentInformation();
+	
+	if (neighbouringDataManager->GetNeededSites().size() > 0) {
+		hemelb::log::Logger::Log<hemelb::log::Info, hemelb::log::Singleton>("--> Sharing Needs between ranks");
+		neighbouringDataManager->ShareNeeds();
+		neighbouringDataManager->TransferNonFieldDependentInformation();
+	} 
 
 	propertyDataSource =
 		new hemelb::extraction::LbDataSourceIterator(latticeBoltzmannModel->GetPropertyCache(),

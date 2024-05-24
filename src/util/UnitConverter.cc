@@ -13,14 +13,13 @@ namespace hemelb
   {
 
     UnitConverter::UnitConverter(PhysicalTime timeStep, PhysicalDistance voxelSize,
-                                 PhysicalPosition latticeOrigin) :
+                                 PhysicalPosition latticeOrigin, double density) :
       latticeDistance(voxelSize), latticeTime(timeStep),
-          latticeMass(BLOOD_DENSITY_Kg_per_m3 * voxelSize * voxelSize * voxelSize),
+          latticeMass(density * voxelSize * voxelSize * voxelSize),
           latticeSpeed(voxelSize / latticeTime),
           latticeOrigin(latticeOrigin),
           latticePressure(latticeMass / (latticeDistance * latticeTime * latticeTime))
     {
-
     }
 
     LatticePressure UnitConverter::ConvertPressureToLatticeUnits(PhysicalPressure pressure) const

@@ -195,6 +195,16 @@ namespace hemelb
 				GetDimensionalValue(bvrEl, "lattice", boundaryVelocityRatio);
 			}
 
+			
+			// Required element
+			// <step_length value="float" units="s" />
+			const io::xml::Element denEl = simEl.GetChildOrThrow("density_phys");
+			GetDimensionalValue(denEl, "kg/m3", densityPhys);
+			// Required element
+			// <step_length value="float" units="s" />
+			const io::xml::Element visEl = simEl.GetChildOrThrow("viscosity_phys");
+			GetDimensionalValue(visEl, "Pa.s", viscosityPhys);
+
 		}
 
 		void SimConfig::DoIOForGeometry(const io::xml::Element geometryEl)
@@ -226,7 +236,8 @@ namespace hemelb
 		{
 			unitConverter = new util::UnitConverter(timeStepSeconds,
 					voxelSizeMetres,
-					geometryOriginMetres);
+					geometryOriginMetres,
+					densityPhys);
 		}
 
 		/**
